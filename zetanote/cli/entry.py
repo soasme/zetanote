@@ -84,6 +84,7 @@ def open_note(key):
             content = f.read()
             if content:
                 note = EditorText.to_meta(content)
+                note['key'] = key
                 upsert(note, Note.key == key)
     except Exception as e:
         click.echo('saving work to /tmp.')
