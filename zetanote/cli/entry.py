@@ -73,9 +73,9 @@ def open_note(key):
     key = make_key(key)
     prefix = 'zetanote-%s-' % key
     with tempfile.NamedTemporaryFile(prefix=prefix, delete=False) as f:
-        note = select(Note.key == key)
-        if note:
-            f.write(Meta.to_editor_text(note).encode('utf-8'))
+        note = select(Note.key == key) or {'text': ''}
+        note['key'] = key
+        f.write(Meta.to_editor_text(note).encode('utf-8'))
 
     # Edit file and save it.
     try:
