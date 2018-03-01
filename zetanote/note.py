@@ -62,3 +62,6 @@ class DB:
 
     def upsert(self, note, cond):
         return self.db.table('notes').upsert(note, cond)
+
+    def select_all(self):
+        return self.db.table('notes').all()

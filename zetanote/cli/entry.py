@@ -21,6 +21,7 @@ import traceback
 
 import click
 from zetanote.note import DB, Meta, EditorText, Note
+from zetanote.api.app import create_app
 
 
 def db():
@@ -31,6 +32,9 @@ def select(cond):
 
 def upsert(note, cond):
     return db().upsert(note, cond)
+
+def select_all():
+    return db().select_all()
 
 @click.group()
 def zetanote():
@@ -77,6 +81,35 @@ def show_note(key):
     else:
         print('Note not found.', stderr=True)
         sys.exit(1)
+
+
+def truncate(text, n=20):
+    if len(text) > n:
+        return text[:20] + '...'
+    else:
+        return text
+
+@zetanote.command('ls')
+@click.argument('filter', default='')
+@click.option('--field', '-f', default='')
+def list_notes(filter, field):
+    """List all notes
+
+    Example::
+
+        $ zeta ls -f date,url | grep 2018-02-25
+        $ zeta ls
+        $ zeta ls -f date | grep 2018-02-26 | awk '{print $1}' | xargs -I {} zeta show {}
+    """
+    for note in select_all():
+        if not field:
+            desc = note.get('title') or truncate(note['text'])
+        elif ',' in field:
+            desc = '\t'.join([note.get(f, '') for f in field.split(',')])
+        else:
+            desc = note.get(field, '')
+        line = '%s\t%s' % (note['key'], desc)
+        click.echo(line)
 
 
 if __name__ == '__main__':
