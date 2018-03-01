@@ -53,8 +53,8 @@ class EditorText:
 
 class DB:
 
-    def __init__(self, dir, user):
-        self.path = '%s/%s.json' % (dir, user)
+    def __init__(self, dir, type='default'):
+        self.path = '%s/%s.json' % (dir, type)
         self.db = TinyDB(self.path)
 
     def select(self, cond):

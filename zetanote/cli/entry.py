@@ -21,11 +21,13 @@ import traceback
 
 import click
 from zetanote.note import DB, Meta, EditorText, Note
-from zetanote.api.app import create_app
 
+class Conf:
+
+    DATA = environ.get('ZETANOTE_DATA') or '~/.zetanote'
 
 def db():
-    return DB(environ['ZETANOTE_DATA'], environ['ZETANOTE_USER'])
+    return DB(Conf.DATA)
 
 def select(cond):
     return db().select(cond)
@@ -39,6 +41,9 @@ def select_all():
 def delete(cond):
     return db().remove(cond)
 
+def truncate(text, n=20):
+    return text[:20] + '...' if len(text) > n else text
+
 def format_note_in_shell(note, field):
     if not field:
         desc = note.get('title') or truncate(note['text'])
@@ -48,18 +53,25 @@ def format_note_in_shell(note, field):
         desc = note.get(field, '')
     return desc
 
+def ensure_data():
+    if not os.path.exists(Conf.DATA):
+        os.mkdir(Conf.DATA)
+
 @click.group()
 def zetanote():
     """Zetanote - Organizing notes in less pain."""
+    ensure_data()
+
+def make_key(default):
+    return str(uuid4()) if default == '*' else default
 
 @zetanote.command(name='open')
 @click.argument('key', default='')
 def open_note(key):
     """ """
     # Load note content into temp file if exists
-    key = str(uuid4()) if key == '*' else key
-    user = environ.get('ZETANOTE_USER') or environ['USER']
-    prefix = 'zetanote-%s-%s-' % (user, key)
+    key = make_key(key)
+    prefix = 'zetanote-%s-' % key
     with tempfile.NamedTemporaryFile(prefix=prefix, delete=False) as f:
         note = select(Note.key == key)
         if note:
@@ -101,11 +113,6 @@ def show_note(key):
         sys.exit(1)
 
 
-def truncate(text, n=20):
-    if len(text) > n:
-        return text[:20] + '...'
-    else:
-        return text
 
 @zetanote.command('ls')
 @click.argument('filter', default='')
