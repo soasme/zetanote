@@ -36,12 +36,24 @@ def upsert(note, cond):
 def select_all():
     return db().select_all()
 
+def delete(cond):
+    return db().remove(cond)
+
+def format_note_in_shell(note, field):
+    if not field:
+        desc = note.get('title') or truncate(note['text'])
+    elif ',' in field:
+        desc = '\t'.join([note.get(f, '') for f in field.split(',')])
+    else:
+        desc = note.get(field, '')
+    return desc
+
 @click.group()
 def zetanote():
     """Zetanote - Organizing notes in less pain."""
 
 @zetanote.command(name='open')
-@click.argument('key', default='*')
+@click.argument('key', default='')
 def open_note(key):
     """ """
     # Load note content into temp file if exists
@@ -72,14 +84,20 @@ def open_note(key):
     click.echo(key)
 
 
-@zetanote.command('show')
+@zetanote.command('cat')
 @click.argument('key')
 def show_note(key):
+    """Show a note
+
+    Example::
+
+        $ zeta cat 02ee4ba7-71ce-4e02-b2cb-fd1582b5a103
+    """
     note = select(Note.key == key)
     if note:
         click.echo(Meta.to_editor_text(note))
     else:
-        print('Note not found.', stderr=True)
+        click.echo('zeta cat: note not found.', err=True)
         sys.exit(1)
 
 
@@ -102,14 +120,17 @@ def list_notes(filter, field):
         $ zeta ls -f date | grep 2018-02-26 | awk '{print $1}' | xargs -I {} zeta show {}
     """
     for note in select_all():
-        if not field:
-            desc = note.get('title') or truncate(note['text'])
-        elif ',' in field:
-            desc = '\t'.join([note.get(f, '') for f in field.split(',')])
-        else:
-            desc = note.get(field, '')
-        line = '%s\t%s' % (note['key'], desc)
-        click.echo(line)
+        click.echo('%s\t%s' % (note['key'],
+                               format_note_in_shell(note, field)))
+
+
+@zetanote.command('rm')
+@click.argument('key', default='')
+def remove_note(key):
+    try:
+        delete(Note.key == key)
+    except KeyError:
+        click.echo('zeta rm: cannot remove \'%s\': No such note' % key)
 
 
 if __name__ == '__main__':

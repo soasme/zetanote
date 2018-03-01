@@ -65,3 +65,7 @@ class DB:
 
     def select_all(self):
         return self.db.table('notes').all()
+
+    def remove(self, cond):
+        doc_ids = [n.doc_id for n in self.db.table('notes').search(cond)]
+        return self.db.table('notes').remove(doc_ids=doc_ids)
