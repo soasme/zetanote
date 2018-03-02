@@ -63,7 +63,7 @@ def zetanote():
     ensure_data()
 
 def make_key(default):
-    return str(uuid4()) if default == '*' else default
+    return str(uuid4()) if default == '' else default
 
 @zetanote.command(name='open')
 @click.argument('key', default='')
