@@ -167,6 +167,11 @@ def open_instaweb(ctx):
 def stop_instaweb(ctx):
     ctx.obj['daemon'].stop()
 
+@instaweb.command('restart')
+@click.pass_context
+def restart_instaweb(ctx):
+    ctx.obj['daemon'].restart()
+
 
 if __name__ == '__main__':
     zetanote(obj={})

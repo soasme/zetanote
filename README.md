@@ -72,4 +72,7 @@ $ zeta instaweb open
 
 # Stop instaweb
 $ zeta instaweb stop
+
+# Restart instaweb
+$ zeta instaweb restart
 ```
