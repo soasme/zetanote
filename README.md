@@ -63,4 +63,13 @@ $ zeta ls | wc -l
 
 # Filter by month
 $ zeta ls -f date | grep '2018-03'
+
+# Start instaweb
+$ zeta instaweb start
+
+# Open in browser
+$ zeta instaweb open
+
+# Stop instaweb
+$ zeta instaweb stop
 ```

@@ -18,9 +18,11 @@ import os.path
 from uuid import uuid4
 import tempfile
 import traceback
+import webbrowser
 
 import click
 from zetanote.note import DB, Meta, EditorText, Note
+from zetanote.daemon import Daemon
 
 class Conf:
 
@@ -141,5 +143,30 @@ def remove_note(key):
         click.echo('zeta rm: cannot remove \'%s\': No such note' % key)
 
 
+@zetanote.group()
+@click.option('--port', default=8964, type=int)
+@click.option('--pidfile', default='')
+@click.pass_context
+def instaweb(ctx, port, pidfile):
+    pidfile = pidfile or '/tmp/zetanote.%s.pid' % port
+    ctx.obj = ctx.obj or {}
+    ctx.obj['daemon'] = Daemon(pidfile, port)
+
+@instaweb.command('start')
+@click.pass_context
+def start_instaweb(ctx):
+    ctx.obj['daemon'].start()
+
+@instaweb.command('open')
+@click.pass_context
+def open_instaweb(ctx):
+    webbrowser.open('http://localhost:%s' % ctx.obj['daemon'].port)
+
+@instaweb.command('stop')
+@click.pass_context
+def stop_instaweb(ctx):
+    ctx.obj['daemon'].stop()
+
+
 if __name__ == '__main__':
-    zetanote()
+    zetanote(obj={})
