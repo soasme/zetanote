@@ -11,9 +11,6 @@ div { display: block; }
   border-image: initial;
   border-width: 1px;
   margin: 10px;
-  white-space:nowrap;
-  width: 100%;
-  overflow: hidden;
 }
 .page-header {
   height: 25px;
