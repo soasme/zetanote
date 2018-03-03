@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
+import re
 import os
 from os import environ
+import argparse
 
 from zetanote.note import DB
 
@@ -39,11 +41,41 @@ def textify_note(note, field):
     if not field:
         desc = note.get('title') or truncate(note['text'])
     elif ',' in field:
-        desc = '\t'.join([note.get(f, '') for f in field.split(',')])
+        desc = '\t'.join([note.get(f) or '' for f in field.split(',')])
     else:
         desc = note.get(field, '')
     return desc
 
-def get_notes(field):
-    return [{'key': note['key'], 'desc': textify_note(note, field)}
-            for note in select_all()]
+def filter_note(note, condition):
+    if condition['op'] == '=':
+        return note.get(condition['key']) == condition['value']
+    elif condition['op'] == '=':
+        return note.get(condition['key']) != condition['value']
+    elif condition['op'] == '~':
+        return bool(re.search(condition['value'], note.get(condition['key'])))
+    elif condition['op'] == '!~':
+        return not bool(re.search(condition['value'], note.get(condition['key'])))
+    else:
+        return False
+
+def get_notes(field, conditions):
+    hits = []
+    conditions = conditions or []
+    for note in select_all():
+        # fixme: please customize a more sophisticated algorithm
+        if not all(filter_note(note, c) for c in conditions):
+            continue
+        elem = {'key': note['key'], 'desc': textify_note(note, field), 'note': note}
+        hits.append(elem)
+    return hits
+
+def parse_zql(q):
+    # fixme: please customize a more sophisticated algorithm
+    field_match = re.search(r'\s*(-f|--field)\s+([^ ]+)', q)
+    field = field_match.group(2) if field_match else None
+    condition_match = re.findall(r'\s*(-c|--condition)\s+(\S+)(=|~|!=|!~)(\S+)', q)
+    conditions = [
+        {'key': match[1], 'op': match[2], 'value': match[3]}
+        for match in condition_match
+    ]
+    return {'field': field, 'conditions': conditions}

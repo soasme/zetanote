@@ -1,5 +1,6 @@
 body { margin: 0 auto; }
 div { display: block; }
+.sha { font-family: monospace; }
 .container {
   font-family: sans-serif;
   font-size: small;
