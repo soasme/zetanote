@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+  <head>
+  <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8"/>
+  <meta meta="generator" content="zetanote/0.0.1"/>
+  <meta name="robots" content="index, nofollow"/>
+  <title>{% block title %}Zetanote{% endblock %}</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='imgs/zetanote-favicon.png') }}" type="image/png" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/zetanote.css') }}"/>
+  </head>
+  <body>
+    <div class="container">
+      <div class="page-header">Zetanote / <a href="/">Home</a></div>
+      {% block container %}{% endblock %}
+      </div>
+    </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/zetanote.js') }}"></script>
+  </body>
+</html>
