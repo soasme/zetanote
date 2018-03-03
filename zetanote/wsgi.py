@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from markdown import Markdown
 from urllib.parse import urlencode
 from flask import Flask, request, abort, render_template, send_from_directory
-from zetanote.app import (get_notes, parse_zql)
+from zetanote.note import Note
+from zetanote.app import (get_notes, parse_zql, select, )
 
 app = Flask(__name__, static_url_path='/static')
+markdown = Markdown(extensions=['markdown.extensions.extra'])
 
 def template_url(preserve_current=False, **kwargs):
     params = dict(request.params) if preserve_current else {}
@@ -14,7 +17,11 @@ def template_url(preserve_current=False, **kwargs):
 jinja_env = {
     'url': template_url
 }
+jinja_filters = {
+    'markdown': markdown.convert
+}
 app.jinja_env.globals.update(jinja_env)
+app.jinja_env.filters.update(jinja_filters)
 
 @app.route('/')
 def index():
@@ -36,7 +43,11 @@ def show_404(args=None):
 def show_note(args):
     key = args.get('key')
     if not key: abort(404)
-    return 'show single note'
+    note = select(Note.key == key)
+    if not note: abort(404)
+    note['mime'] = 'text/markdown'
+    ctx = {'note': note}
+    return render_template('note.html', **ctx)
 
 
 def list_notes(args):

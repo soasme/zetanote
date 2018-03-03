@@ -20,7 +20,7 @@
       <tbody>
         {% for el in hits %}
         <tr>
-          <td class="sha"><a href="{{ url(a='sn', key=el.key) }}">{{ el.key }}</a></td>
+          <td class="sha"><a href="{{ url(a='cat', key=el.key) }}">{{ el.key }}</a></td>
           <td>{{ el.desc }}</td>
         </tr>
         {% endfor %}

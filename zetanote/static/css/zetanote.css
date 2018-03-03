@@ -11,6 +11,9 @@ div { display: block; }
   border-image: initial;
   border-width: 1px;
   margin: 10px;
+  white-space:nowrap;
+  width: 100%;
+  overflow: hidden;
 }
 .page-header {
   height: 25px;
@@ -21,9 +24,18 @@ div { display: block; }
 }
 
 .container .section {
-  margin: 10px;
+  padding: 6px;
+}
+
+.clear-bottom {
+  border: solid 1px #d9d8d1;
+  border-width: 0px 0px 1px;
 }
 
 .home .search form {
   text-align: center;
+}
+
+.note .meta {
+  font-family: monospace;
 }
