@@ -23,49 +23,16 @@ import webbrowser
 import click
 from zetanote.note import DB, Meta, EditorText, Note
 from zetanote.daemon import Daemon
+from zetanote.app import (Conf, db, select, upsert, select_all,
+                          delete, truncate, ensure_data, make_key,
+                          textify_note, get_notes)
 
-class Conf:
-
-    DATA = environ.get('ZETANOTE_DATA') or '~/.zetanote'
-
-def db():
-    return DB(Conf.DATA)
-
-def select(cond):
-    return db().select(cond)
-
-def upsert(note, cond):
-    return db().upsert(note, cond)
-
-def select_all():
-    return db().select_all()
-
-def delete(cond):
-    return db().remove(cond)
-
-def truncate(text, n=20):
-    return text[:20] + '...' if len(text) > n else text
-
-def format_note_in_shell(note, field):
-    if not field:
-        desc = note.get('title') or truncate(note['text'])
-    elif ',' in field:
-        desc = '\t'.join([note.get(f, '') for f in field.split(',')])
-    else:
-        desc = note.get(field, '')
-    return desc
-
-def ensure_data():
-    if not os.path.exists(Conf.DATA):
-        os.mkdir(Conf.DATA)
 
 @click.group()
 def zetanote():
     """Zetanote - Organizing notes in less pain."""
     ensure_data()
 
-def make_key(default):
-    return str(uuid4()) if default == '' else default
 
 @zetanote.command(name='open')
 @click.argument('key', default='')
@@ -129,9 +96,8 @@ def list_notes(filter, field):
         $ zeta ls
         $ zeta ls -f date | grep 2018-02-26 | awk '{print $1}' | xargs -I {} zeta show {}
     """
-    for note in select_all():
-        click.echo('%s\t%s' % (note['key'],
-                               format_note_in_shell(note, field)))
+    for obj in get_notes(field):
+        click.echo('%(key)s\t%(desc)s' % obj)
 
 
 @zetanote.command('rm')
@@ -146,11 +112,13 @@ def remove_note(key):
 @zetanote.group()
 @click.option('--port', default=8964, type=int)
 @click.option('--pidfile', default='')
+@click.option('--logfile', default='')
 @click.pass_context
-def instaweb(ctx, port, pidfile):
+def instaweb(ctx, port, pidfile, logfile):
     pidfile = pidfile or '/tmp/zetanote.%s.pid' % port
+    logfile = logfile or '/tmp/zetanote.%s.log' % port
     ctx.obj = ctx.obj or {}
-    ctx.obj['daemon'] = Daemon(pidfile, port)
+    ctx.obj['daemon'] = Daemon(pidfile, logfile, port)
 
 @instaweb.command('start')
 @click.pass_context
