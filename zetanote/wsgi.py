@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import bleach
+from uuid import uuid4
 from markdown import Markdown
 from urllib.parse import urlencode
 from flask import Flask, request, abort, render_template, url_for, redirect
@@ -37,6 +38,8 @@ def route(args):
         return list_notes(args)
     elif action == 'ed':
         return edit_note(args)
+    elif action == 'ad':
+        return add_note(args)
     else:
         return show_404(args)
 
@@ -71,8 +74,22 @@ def edit_note(args):
     if request.method == 'POST':
         form = request.form.to_dict()
         form['key'] = note['key']
+        form = {k.strip(): v.strip() for k, v in form.items()}
         upsert(form, Note.key == note['key'])
         return redirect(url_for('index', a='cat', key=note['key']))
 
     ctx = {'note': note}
+    return render_template('edit.html', **ctx)
+
+
+def add_note(args):
+    ctx = {'note': {'key': '', 'text': ''}}
+
+    if request.method == 'POST':
+        form = request.form.to_dict()
+        form['key'] = str(uuid4())
+        form = {k.strip(): v.strip() for k, v in form.items()}
+        doc_id = upsert(form, Note.key == form['key'])
+        return redirect(url_for('index', a='cat', key=form['key']))
+
     return render_template('edit.html', **ctx)

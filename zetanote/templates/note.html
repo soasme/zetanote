@@ -27,7 +27,7 @@
   </div>
   <div class="text section">
     {% if note.mime == 'text/markdown' %}
-    {{ note.text | sanitizer | markdown | safe }}
+    {{ note.text | markdown | safe }}
     {% else %}
     {{ note.text | sanitizer }}
     {% endif %}
