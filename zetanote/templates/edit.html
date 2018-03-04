@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="edit">
+  <div class="meta section">
+    <form method="POST" id="note">
+      <table class="meta">
+        <tbody>
+          <tr>
+            <td><em>key</em></td>
+            <td>{{ note.key }}</td>
+            <td>
+              <input type="hidden" name="key" value="{{ note.key }}">
+            </td>
+          </tr>
+          {% for key, value in note.items() %}
+          {% if key != 'text' and key != 'key'%}
+          <tr>
+            <td><em>{{ key }}</em></td>
+            <td><input size=50 type="text" name="{{ key }}" value="{{ value }}"></td>
+            <td>
+              <input type="button" class="delete-meta" value="delete">
+            </td>
+          </tr>
+          {% endif %}
+          {% endfor %}
+          <tr>
+            <td><input type="text" id="new-meta-key"></td>
+            <td><input type="text" size=50 id="new-meta-value"></td>
+            <td><input type="button" id="add-new-meta" value="add"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="text section clear-bottom">
+      <textarea rows=20 cols=100 name="text">{{ note.text | sanitizer }}</textarea>
+    </div>
+    <div class="go section">
+      <input type="submit" value="Save">
+      <input type="button" value="Cancle" class="cancel-editing">
+      <input type="button" value="Delete">
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+(function(){
+  const deleteMeta = function(e) {
+    $(e.target).parent().parent().remove()
+  }
+
+  $(".delete-meta").on('click', deleteMeta);
+
+  $("#add-new-meta").on('click', (e) => {
+    const key = $("#new-meta-key").val();
+    if (key == 'text' || key == 'key') {
+      alert('`key` and `text` are preserved. Please use other keys.');
+      return false;
+    }
+    const value = $("#new-meta-value").val();
+    const html = `<tr>
+  <td><em>${key}</em></td>
+  <td><input size=50 type="text" name="${key}" value="${value}"></td>
+  <td>
+    <input type="button" class="delete-meta" value="delete">
+  </td>
+</tr>`;
+    $(e.target).parent().parent().before(html);
+    $("#new-meta-key").val('');
+    $("#new-meta-value").val('');
+    $(".delete-meta").on('click', deleteMeta);
+  })
+
+  $(".cancel-editing").on('click', (e) => {
+    window.location.href = "{{ url(a='cat', key=note.key) | safe }}";
+  })
+})()
+</script>
+{% endblock %}

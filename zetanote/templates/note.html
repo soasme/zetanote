@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="cat">
+  <div class="section clear-bottom">
+    <a href="{{ url(a='ed', key=note.key) }}">edit</a>
+  </div>
+  <div class="note section clear-bottom">
+    <table class="meta">
+      <thead>
+        <tr>
+          <th>key</th>
+          <th>value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key, value in note.items() %}
+        {% if key != 'text' %}
+        <tr>
+          <td><em>{{ key | sanitizer }}</em></td>
+          <td>{{ value or '' | sanitizer }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="text section">
+    {% if note.mime == 'text/markdown' %}
+    {{ note.text | sanitizer | markdown | safe }}
+    {% else %}
+    {{ note.text | sanitizer }}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

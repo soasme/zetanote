@@ -17,6 +17,8 @@
       {% block container %}{% endblock %}
       </div>
     </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/zepto-v1.2.0.min.js') }}"></script>
+    {% block script %}{% endblock %}
     <script type="text/javascript" src="{{ url_for('static', filename='js/zetanote.js') }}"></script>
   </body>
 </html>

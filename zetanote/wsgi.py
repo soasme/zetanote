@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import bleach
 from markdown import Markdown
 from urllib.parse import urlencode
-from flask import Flask, request, abort, render_template, send_from_directory
+from flask import Flask, request, abort, render_template, url_for, redirect
 from zetanote.note import Note
-from zetanote.app import (get_notes, parse_zql, select, )
+from zetanote.app import (get_notes, parse_zql, select, upsert)
 
 app = Flask(__name__, static_url_path='/static')
 markdown = Markdown(extensions=['markdown.extensions.extra'])
@@ -18,12 +19,13 @@ jinja_env = {
     'url': template_url
 }
 jinja_filters = {
-    'markdown': markdown.convert
+    'markdown': markdown.convert,
+    'sanitizer': bleach.clean,
 }
 app.jinja_env.globals.update(jinja_env)
 app.jinja_env.filters.update(jinja_filters)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     return route(request.args)
 
@@ -33,6 +35,8 @@ def route(args):
         return show_note(args)
     elif action == 'ls':
         return list_notes(args)
+    elif action == 'ed':
+        return edit_note(args)
     else:
         return show_404(args)
 
@@ -40,12 +44,16 @@ def route(args):
 def show_404(args=None):
     return render_template("404.html"), 404
 
-def show_note(args):
+def _ensure_note(args):
     key = args.get('key')
     if not key: abort(404)
     note = select(Note.key == key)
     if not note: abort(404)
-    note['mime'] = 'text/markdown'
+    return note
+
+def show_note(args):
+    note = _ensure_note(args)
+    note.setdefault('mime', 'text/markdown')
     ctx = {'note': note}
     return render_template('note.html', **ctx)
 
@@ -56,3 +64,15 @@ def list_notes(args):
     hits = get_notes(args.get('field'), args.get('conditions'))
     context = dict(hits=hits, q=query)
     return render_template('home.html', **context)
+
+def edit_note(args):
+    note = _ensure_note(args)
+
+    if request.method == 'POST':
+        form = request.form.to_dict()
+        form['key'] = note['key']
+        upsert(form, Note.key == note['key'])
+        return redirect(url_for('index', a='cat', key=note['key']))
+
+    ctx = {'note': note}
+    return render_template('edit.html', **ctx)

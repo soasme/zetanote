@@ -58,7 +58,7 @@ def filter_note(note, condition):
     else:
         return False
 
-def get_notes(field, conditions):
+def get_notes(field, conditions=None):
     hits = []
     conditions = conditions or []
     for note in select_all():

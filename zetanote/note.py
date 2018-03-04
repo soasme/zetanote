@@ -17,6 +17,7 @@ import traceback
 
 import click
 from tinydb import TinyDB, Query
+from tinydb.operations import delete
 
 Note = Query()
 
@@ -61,6 +62,12 @@ class DB:
         return self.db.table('notes').get(cond)
 
     def upsert(self, note, cond):
+        orig = self.select(cond)
+        if orig:
+            #for key in (set(note.keys()) - set(orig.keys())):
+            #    self.db.table('notes').update(delete(key), cond)
+            for key in (set(orig.keys()) - set(note.keys())):
+                self.db.table('notes').update(delete(key), doc_ids=[orig.doc_id])
         return self.db.table('notes').upsert(note, cond)
 
     def select_all(self):
