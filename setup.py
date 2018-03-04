@@ -17,7 +17,7 @@ setuptools.setup(
     ],
     entry_points='''
         [console_scripts]
-        zeta=zetanote.cli.entry:zetanote
+        zeta=zetanote.cli:zetanote
     ''',
     test_require=['pytest', 'flake8'],
     platforms='linux',

@@ -15,6 +15,6 @@ gunicorn = "*"
 flask = "*"
 click = "*"
 tinydb = "*"
-"e1839a8" = {path = ".", editable = true}
+"e1839a8" = {editable = true, path = "."}
 markdown = "*"
 bleach = "*"
