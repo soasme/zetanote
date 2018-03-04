@@ -2,7 +2,11 @@
 
 {% block container %}
 <div class="home">
-  <div class="search section">
+  <div class="section clear-bottom">
+    <a href="{{ url(a='ad') }}">add</a> |
+    <a href="{{ url(a='dump') }}">dump</a>
+  </div>
+  <div class="search section clear-bottom">
     <form>
       <input type="input" name="q" autocomplete="off" value="{{ q }}">
       <input type="hidden" name="a" value="ls">
