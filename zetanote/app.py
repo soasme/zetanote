@@ -47,14 +47,17 @@ def textify_note(note, field):
     return desc
 
 def filter_note(note, condition):
+    key = condition['key']
+    value = condition['value']
+    note_value = note.get(key, '')
     if condition['op'] == '=':
-        return note.get(condition['key']) == condition['value']
-    elif condition['op'] == '=':
-        return note.get(condition['key']) != condition['value']
+        return note_value == value
+    elif condition['op'] == '!=':
+        return note_value != value
     elif condition['op'] == '~':
-        return bool(re.search(condition['value'], note.get(condition['key'])))
+        return bool(re.search(value, note_value))
     elif condition['op'] == '!~':
-        return not bool(re.search(condition['value'], note.get(condition['key'])))
+        return not bool(re.search(value, note_value))
     else:
         return False
 
@@ -73,7 +76,7 @@ def parse_zql(q):
     # fixme: please customize a more sophisticated algorithm
     field_match = re.search(r'\s*(-f|--field)\s+([^ ]+)', q)
     field = field_match.group(2) if field_match else None
-    condition_match = re.findall(r'\s*(-c|--condition)\s+(\S+)(=|~|!=|!~)(\S+)', q)
+    condition_match = re.findall(r'\s*(-c|--condition)\s+([^!=~ ]+)(=|~|!=|!~)(\S+)', q)
     conditions = [
         {'key': match[1], 'op': match[2], 'value': match[3]}
         for match in condition_match
