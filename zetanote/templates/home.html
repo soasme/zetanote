@@ -4,7 +4,9 @@
 <div class="home">
   <div class="section clear-bottom">
     <a href="{{ url(a='ad') }}">add</a> |
-    <a href="{{ url(a='dump') }}">dump</a>
+    <a href="{{ url(a='dump') }}">dump</a> |
+    <a href="{{ url(a='logout') }}">logout</a> |
+    <span>Login as <a href="https://github.com/{{ u['login'] }}">{{ u['login'] }}</a>.</span>
   </div>
   <div class="search section clear-bottom">
     <form>

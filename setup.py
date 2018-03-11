@@ -14,6 +14,9 @@ setuptools.setup(
     install_requires=[
         'click',
         'tinydb',
+        'flask',
+        'bleach',
+        'markdown',
     ],
     entry_points='''
         [console_scripts]

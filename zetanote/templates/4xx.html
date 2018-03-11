@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="section">
+  <h1>Wrong Request: {{ e.message }}</h1>
+  <p>Sorry, this is an invalid request. Back <a href="/">Home</a>.</p>
+</div>
+{% endblock %}
+
