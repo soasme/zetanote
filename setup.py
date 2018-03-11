@@ -17,6 +17,7 @@ setuptools.setup(
         'flask',
         'bleach',
         'markdown',
+        'authlib',
     ],
     entry_points='''
         [console_scripts]

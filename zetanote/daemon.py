@@ -122,4 +122,4 @@ class Daemon:
         It will be called after the process has been daemonized by
         start() or restart()."""
         from zetanote.wsgi import app
-        app.run(port=self.port, debug=True, use_reloader=False, use_debugger=True)
+        app.run(host='0.0.0.0', port=self.port, debug=True, use_reloader=False, use_debugger=True)
