@@ -3,6 +3,6 @@ python:
     - "3.6"
 install:
     - pip install pipenv==11.0.0
-    - pipenv install
+    - pipenv install -e .
 script:
     - pipenv run py.test tests
