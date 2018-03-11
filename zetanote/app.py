@@ -12,7 +12,7 @@ class Conf:
 
     DATA = environ.get('ZETANOTE_DATA') or '~/.zetanote'
     SECRET_KEY = environ.get('SECRET_KEY') or 'ofINfQJarBfljciupHQRqsGlRJXECLFC'
-    GITHUB_CLIENT_ID = environ.get('GITHUB_CLIENT_ID')
+    GITHUB_CLIENT_KEY = environ.get('GITHUB_CLIENT_KEY')
     GITHUB_CLIENT_SECRET = environ.get('GITHUB_CLIENT_SECRET')
 
 
