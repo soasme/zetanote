@@ -10,6 +10,8 @@ FROM python:3-alpine
 
 COPY --from=build /usr/local /usr/local
 
+EXPOSE 8964
+
 RUN apk add --no-cache curl bash
 # https://github.com/gliderlabs/docker-alpine/blob/master/docs/usage.md
 
