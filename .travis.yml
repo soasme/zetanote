@@ -6,3 +6,8 @@ install:
     - pipenv install -e .
 script:
     - pipenv run py.test tests
+    - docker login --email=$DOCKER_HUB_EMAIL --username=$DOCKER_HUB_USERNAME --password=$DOCKER_HUB_PASSWORD
+    - docker build -t $DOCKER_IMAGE_NAME .
+    - if [ ! -z "$TRAVIS_TAG"  ]; then docker tag $DOCKER_IMAGE_NAME:latest $DOCKER_IMAGE_NAME:$TRAVIS_TAG; fi && docker push $DOCKER_IMAGE_NAME
+env:
+    - DOCKER_IMAGE_NAME=soasme/zetanote
