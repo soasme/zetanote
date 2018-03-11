@@ -16,4 +16,4 @@ RUN apk add --no-cache curl bash
 # https://github.com/gliderlabs/docker-alpine/blob/master/docs/usage.md
 
 # Run web process by default.
-CMD bash
+CMD gunicorn zetanote.wsgi:app -b 0.0.0.0:8964
