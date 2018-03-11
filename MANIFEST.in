@@ -1,1 +1,1 @@
-recursive-include zetanote *.py
+recursive-include zetanote *.py *.html *.css *.js
