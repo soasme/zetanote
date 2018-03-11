@@ -18,3 +18,4 @@ tinydb = "*"
 "e1839a8" = {editable = true, path = "."}
 markdown = "*"
 bleach = "*"
+authlib = "*"
