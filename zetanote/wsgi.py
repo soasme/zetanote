@@ -20,13 +20,12 @@ github.register_to(oauth)
 sslify = Conf.DEBUG and SSLify(app)
 markdown = Markdown(extensions=['markdown.extensions.extra'])
 
-def template_url(preserve_current=False, **kwargs):
-    params = dict(request.params) if preserve_current else {}
-    params.update(kwargs)
-    return '?%s' % urlencode(params)
+def urlgen(**kwargs):
+    scheme = 'http' if Conf.DEBUG else 'https'
+    return url_for('index', _external=True, _scheme=scheme, **kwargs)
 
 jinja_env = {
-    'url': template_url
+    'url': urlgen
 }
 jinja_filters = {
     'markdown': markdown.convert,
@@ -117,7 +116,7 @@ def edit_note(args):
         form['key'] = note['key']
         form = {k.strip(): v.strip() for k, v in form.items()}
         g.db.upsert(form, Note.key == note['key'])
-        return redirect(url_for('index', a='cat', key=note['key']))
+        return redirect(urlgen(a='cat', key=note['key']))
 
     ctx = {'note': note}
     return render_template('edit.html', **ctx)
@@ -131,13 +130,13 @@ def add_note(args):
         form['key'] = str(uuid4())
         form = {k.strip(): v.strip() for k, v in form.items()}
         doc_id = g.db.upsert(form, Note.key == form['key'])
-        return redirect(url_for('index', a='cat', key=form['key']))
+        return redirect(urlgen(a='cat', key=form['key']))
 
     return render_template('edit.html', **ctx)
 
 
 def login(args):
-    redirect_uri = url_for('index', a='authorize', _external=True)
+    redirect_uri = urlgen(a='authorize')
     return oauth.github.authorize_redirect(redirect_uri)
 
 def authorize(args):
@@ -147,10 +146,10 @@ def authorize(args):
         user = res.json()
         ensure_user_dir(user, type='gh')
         session['u'] = json.dumps(user)
-        return redirect(url_for('index'))
+        return redirect(urlgen())
     else:
         abort(401)
 
 def logout(args):
     session.pop('u', None)
-    return redirect(url_for('index'))
+    return redirect(urlgen())
