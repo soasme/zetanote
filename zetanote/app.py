@@ -16,21 +16,20 @@ class Conf:
     GITHUB_CLIENT_ID = environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = environ.get('GITHUB_CLIENT_SECRET')
 
+def get_user_dir(user, type='gh'):
+    return f'{Conf.DATA}/{type}/{user["id"]}'
 
-def db():
-    return DB(Conf.DATA)
+def ensure_user_dir(user, type='gh'):
+    path = get_user_dir(user, type=type)
+    if os.path.exists(path):
+        return
+    os.makedirs(path)
 
-def select(cond):
-    return db().select(cond)
+def db(user, type='gh'):
+    return DB(get_user_dir(user, type='gh'))
 
-def upsert(note, cond):
-    return db().upsert(note, cond)
-
-def select_all():
-    return db().select_all()
-
-def delete(cond):
-    return db().remove(cond)
+def select_all(db):
+    return db.select_all()
 
 def truncate(text, n=20):
     return text[:20] + '...' if len(text) > n else text
@@ -66,10 +65,10 @@ def filter_note(note, condition):
     else:
         return False
 
-def get_notes(field, conditions=None):
+def get_notes(db, field, conditions=None):
     hits = []
     conditions = conditions or []
-    for note in select_all():
+    for note in select_all(db):
         # fixme: please customize a more sophisticated algorithm
         if not all(filter_note(note, c) for c in conditions):
             continue

@@ -5,16 +5,17 @@ import json
 from uuid import uuid4
 from markdown import Markdown
 from urllib.parse import urlencode
-from flask import Flask, request, abort, render_template, url_for, redirect, session
+from flask import Flask, request, abort, render_template, url_for, redirect, session, g
 from flask_sslify import SSLify
 from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
 from zetanote.note import Note
-from zetanote.app import (Conf, get_notes, parse_zql, select, upsert)
+from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir)
 
 app = Flask(__name__, static_url_path='/static')
 app.config.from_object(Conf)
+print(app.config)
 oauth = OAuth(app)
 github.register_to(oauth)
 sslify = Conf.DEBUG and SSLify(app)
@@ -34,6 +35,11 @@ jinja_filters = {
 }
 app.jinja_env.globals.update(jinja_env)
 app.jinja_env.filters.update(jinja_filters)
+
+@app.before_request
+def start_a_request():
+    g.user = session.get('u') and json.loads(session['u'])
+    g.db = g.user and db(g.user, type='gh')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -86,7 +92,7 @@ def show_proj(args):
 def _ensure_note(args):
     key = args.get('key')
     if not key: abort(404)
-    note = select(Note.key == key)
+    note = g.db.select(Note.key == key)
     if not note: abort(404)
     return note
 
@@ -100,7 +106,7 @@ def show_note(args):
 def list_notes(args):
     query = args.get('q', '')
     args = parse_zql(query) if query else {}
-    hits = get_notes(args.get('field'), args.get('conditions'))
+    hits = get_notes(g.db, args.get('field'), args.get('conditions'))
     context = dict(u=get_user(), hits=hits, q=query)
     return render_template('home.html', **context)
 
@@ -111,7 +117,7 @@ def edit_note(args):
         form = request.form.to_dict()
         form['key'] = note['key']
         form = {k.strip(): v.strip() for k, v in form.items()}
-        upsert(form, Note.key == note['key'])
+        g.db.upsert(form, Note.key == note['key'])
         return redirect(url_for('index', a='cat', key=note['key']))
 
     ctx = {'note': note}
@@ -125,7 +131,7 @@ def add_note(args):
         form = request.form.to_dict()
         form['key'] = str(uuid4())
         form = {k.strip(): v.strip() for k, v in form.items()}
-        doc_id = upsert(form, Note.key == form['key'])
+        doc_id = g.db.upsert(form, Note.key == form['key'])
         return redirect(url_for('index', a='cat', key=form['key']))
 
     return render_template('edit.html', **ctx)
@@ -139,7 +145,9 @@ def authorize(args):
     token = oauth.github.authorize_access_token()
     res = oauth.github.get('/user')
     if res.status_code == 200:
-        session['u'] = json.dumps(res.json())
+        user = res.json()
+        ensure_user_dir(user, type='gh')
+        session['u'] = json.dumps(user)
         return redirect(url_for('index'))
     else:
         abort(401)
