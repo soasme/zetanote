@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import io
 import bleach
 import json
 from uuid import uuid4
 from markdown import Markdown
 from urllib.parse import urlencode
-from flask import Flask, request, abort, render_template, url_for, redirect, session, g
+from flask import Flask, request, abort, render_template, url_for, redirect, session, g, send_file
 from flask_sslify import SSLify
 from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
 from zetanote.note import Note
-from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir)
+from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir, get_notes_artifact)
 
 app = Flask(__name__, static_url_path='/static')
 app.config.from_object(Conf)
@@ -37,7 +38,11 @@ app.jinja_env.filters.update(jinja_filters)
 @app.before_request
 def start_a_request():
     g.user = session.get('u') and json.loads(session['u'])
-    g.db = g.user and db(g.user, type='gh')
+    try:
+        g.db = g.user and db(g.user, type='gh')
+    except FileNotFoundError:
+        ensure_user_dir(g.user, type='gh')
+        g.db = g.user and db(g.user, type='gh')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -66,6 +71,8 @@ def route(args):
         return edit_note(args)
     elif action == 'ad':
         return add_note(args)
+    elif action == 'dump':
+        return dump_note(args)
     elif action == 'logout':
         return logout(args)
     else:
@@ -133,6 +140,13 @@ def add_note(args):
         return redirect(urlgen(a='cat', key=form['key']))
 
     return render_template('edit.html', **ctx)
+
+def dump_note(args):
+    data = get_notes_artifact(g.db)
+    memory_file = io.BytesIO(data.encode('utf8'))
+    return send_file(memory_file,
+                     attachment_filename='data.json',
+                     as_attachment=True)
 
 
 def login(args):

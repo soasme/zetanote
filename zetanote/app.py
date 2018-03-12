@@ -5,6 +5,7 @@ import re
 import os
 from os import environ
 import argparse
+import json
 
 from zetanote.note import DB
 
@@ -64,6 +65,11 @@ def filter_note(note, condition):
         return not bool(re.search(value, note_value))
     else:
         return False
+
+def get_notes_artifact(db):
+    notes = [note for note in select_all(db)]
+    return json.dumps(notes, indent=4)
+
 
 def get_notes(db, field, conditions=None):
     hits = []
