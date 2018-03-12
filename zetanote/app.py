@@ -10,6 +10,7 @@ from zetanote.note import DB
 
 class Conf:
 
+    DEBUG = bool(environ.get('DEBUG'))
     DATA = environ.get('ZETANOTE_DATA') or '~/.zetanote'
     SECRET_KEY = environ.get('SECRET_KEY') or 'ofINfQJarBfljciupHQRqsGlRJXECLFC'
     GITHUB_CLIENT_ID = environ.get('GITHUB_CLIENT_ID')

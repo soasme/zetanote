@@ -4,7 +4,10 @@ build-latest-image:
 
 start-latest-container:
 	mkdir -p `pwd`/data
-	docker run -it -p 8964:8964 --rm -v `pwd`/data:/data -e ZETANOTE_DATA=/data zetanote:latest
+	docker run -it --env-file ./.env.docker -p 8964:8964 --rm -v `pwd`:/app -v `pwd`/data:/data zetanote:latest bash
+
+start-webserver:
+	gunicorn zetanote.wsgi:app -b 0.0.0.0:8964
 
 download-published-image:
 	docker pull soasme/zetanote

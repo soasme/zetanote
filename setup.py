@@ -19,6 +19,7 @@ setuptools.setup(
         'markdown',
         'authlib',
         'gunicorn',
+        'Flask-SSLify',
     ],
     entry_points='''
         [console_scripts]

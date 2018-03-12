@@ -6,6 +6,7 @@ from uuid import uuid4
 from markdown import Markdown
 from urllib.parse import urlencode
 from flask import Flask, request, abort, render_template, url_for, redirect, session
+from flask_sslify import SSLify
 from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
@@ -16,6 +17,7 @@ app = Flask(__name__, static_url_path='/static')
 app.config.from_object(Conf)
 oauth = OAuth(app)
 github.register_to(oauth)
+sslify = Conf.DEBUG and SSLify(app)
 markdown = Markdown(extensions=['markdown.extensions.extra'])
 
 def template_url(preserve_current=False, **kwargs):
