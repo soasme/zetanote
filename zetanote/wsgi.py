@@ -15,7 +15,6 @@ from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir)
 
 app = Flask(__name__, static_url_path='/static')
 app.config.from_object(Conf)
-print(app.config)
 oauth = OAuth(app)
 github.register_to(oauth)
 sslify = Conf.DEBUG and SSLify(app)
