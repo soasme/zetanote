@@ -25,6 +25,7 @@ markdown = Markdown(extensions=['markdown.extensions.extra'])
 
 def urlgen(**kwargs):
     scheme = 'http' if Conf.DEBUG else 'https'
+    kwargs['b'] = request.args.get('b', 'default')
     return url_for('index', _external=True, _scheme=scheme, **kwargs)
 
 jinja_env = {
