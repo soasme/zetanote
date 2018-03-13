@@ -1,6 +1,6 @@
 # Zetanote
 
-Note service with unlimited meta information added for better organizing.
+A great note service making organizing less pain.
 
 Zetanote loads a flat file database into memory for high performance searching and organizing.
 
