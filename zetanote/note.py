@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 
 import os
+import os.path
 from os import environ
 from copy import deepcopy
 import re
@@ -51,6 +52,24 @@ class EditorText:
                 meta[key] = value.strip()
         meta['text'] = '\n'.join(body_lines)
         return meta
+
+class RC:
+
+    FILENAME = '.zetanoterc'
+    DEFAULT = {
+        "maximum_bucket_num": 1,
+    }
+
+    def __init__(self, root):
+        self.root = root
+        self.path = f'{root}/{self.FILENAME}'
+
+    def read(self):
+        if not os.path.exists(self.path):
+            return self.DEFAULT
+        with open(self.path) as f:
+            return json.load(f)
+
 
 class DB:
 
