@@ -12,7 +12,8 @@ from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
 from zetanote.note import Note
-from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir, get_notes_artifact)
+from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir,
+                          get_notes_artifact, AppError)
 
 app = Flask(__name__, static_url_path='/static')
 app.config.from_object(Conf)
@@ -88,6 +89,10 @@ def show_404(e, args=None):
     return render_template("401.html"), 401
 
 @app.errorhandler(OAuthException)
+def show_oautherror(e, args=None):
+    return render_template('4xx.html', e=e), 400
+
+@app.errorhandler(AppError)
 def show_oautherror(e, args=None):
     return render_template('4xx.html', e=e), 400
 
