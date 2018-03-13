@@ -36,8 +36,8 @@ def ensure_user_dir(user, type='gh'):
         return
     os.makedirs(path)
 
-def db(user, type='gh'):
-    return DB(get_user_dir(user, type='gh'))
+def db(user, type='gh', bucket='default'):
+    return DB(get_user_dir(user, type=type), bucket=bucket)
 
 def select_all(db):
     return db.select_all()

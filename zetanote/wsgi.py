@@ -40,11 +40,12 @@ app.jinja_env.filters.update(jinja_filters)
 def start_a_request():
     g.user = session.get('u') and json.loads(session['u'])
     g.conf = g.user and RC(get_user_dir(g.user, type='gh')) or RC.DEFAULT
+    bucket = request.args.get('bucket', 'default')
     try:
-        g.db = g.user and db(g.user, type='gh')
+        g.db = g.user and db(g.user, type='gh', bucket=bucket)
     except FileNotFoundError:
         ensure_user_dir(g.user, type='gh')
-        g.db = g.user and db(g.user, type='gh')
+        g.db = g.user and db(g.user, type='gh', bucket=bucket)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

@@ -73,8 +73,8 @@ class RC:
 
 class DB:
 
-    def __init__(self, dir, type='default'):
-        self.path = '%s/%s.json' % (dir, type)
+    def __init__(self, dir, bucket):
+        self.path = '%s/%s.json' % (dir, bucket)
         self.db = TinyDB(self.path)
 
     def select(self, cond):
