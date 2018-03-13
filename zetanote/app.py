@@ -4,6 +4,7 @@
 import re
 import os
 from os import environ
+import glob
 import argparse
 import json
 
@@ -36,9 +37,6 @@ def ensure_user_dir(user, type='gh'):
         return
     os.makedirs(path)
 
-def db(user, type='gh', bucket='default'):
-    return DB(get_user_dir(user, type=type), bucket=bucket)
-
 def select_all(db):
     return db.select_all()
 
@@ -51,6 +49,16 @@ def ensure_data():
 
 def make_key(default):
     return str(uuid4()) if default == '' else default
+
+def validate_bucket_name(bucket):
+    if not bucket or bucket.startswith('.'):
+        raise InvalidBucketName(f'`{bucket}` is an invalid bucket name.')
+
+def validate_bucket_num(root, bucket, conf):
+    buckets = glob.glob(f'{root}/*.json')
+    if f'{root}/{bucket}.json' not in buckets \
+            and len(buckets) >= conf.get('maximum_bucket_num', 1):
+        raise BucketNumLimited('You cannot create more buckets. Please upgrade account.')
 
 def textify_note(note, field):
     if not field:

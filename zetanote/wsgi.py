@@ -11,8 +11,9 @@ from flask_sslify import SSLify
 from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
-from zetanote.note import Note, RC
-from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir,
+from zetanote.note import Note, RC, DB
+from zetanote.app import (Conf, get_notes, parse_zql, ensure_user_dir,
+                          get_user_dir, validate_bucket_name, validate_bucket_num,
                           get_notes_artifact, AppError)
 
 app = Flask(__name__, static_url_path='/static')
@@ -38,14 +39,20 @@ app.jinja_env.filters.update(jinja_filters)
 
 @app.before_request
 def start_a_request():
+    if request.path.startswith('/static'):
+        return
     g.user = session.get('u') and json.loads(session['u'])
-    g.conf = g.user and RC(get_user_dir(g.user, type='gh')) or RC.DEFAULT
-    bucket = request.args.get('bucket', 'default')
+    g.root = g.user and get_user_dir(g.user, type='gh')
+    g.conf = g.user and RC(g.root).read() or RC.DEFAULT
+    bucket = request.args.get('b', 'default')
+    if g.user and bucket:
+        validate_bucket_name(bucket)
+        validate_bucket_num(g.root, bucket, g.conf)
     try:
-        g.db = g.user and db(g.user, type='gh', bucket=bucket)
+        g.db = g.user and DB(g.root, bucket)
     except FileNotFoundError:
         ensure_user_dir(g.user, type='gh')
-        g.db = g.user and db(g.user, type='gh', bucket=bucket)
+        g.db = g.user and DB(g.root, bucket)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
