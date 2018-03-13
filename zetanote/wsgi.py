@@ -11,7 +11,7 @@ from flask_sslify import SSLify
 from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
-from zetanote.note import Note
+from zetanote.note import Note, RC
 from zetanote.app import (Conf, db, get_notes, parse_zql, ensure_user_dir,
                           get_notes_artifact, AppError)
 
@@ -39,6 +39,7 @@ app.jinja_env.filters.update(jinja_filters)
 @app.before_request
 def start_a_request():
     g.user = session.get('u') and json.loads(session['u'])
+    g.conf = g.user and RC(get_user_dir(g.user, type='gh')) or RC.DEFAULT
     try:
         g.db = g.user and db(g.user, type='gh')
     except FileNotFoundError:
