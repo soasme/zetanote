@@ -17,6 +17,16 @@ class Conf:
     GITHUB_CLIENT_ID = environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = environ.get('GITHUB_CLIENT_SECRET')
 
+class AppError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+class InvalidBucketName(AppError):
+    pass
+
+class BucketNumLimited(AppError):
+    pass
+
 def get_user_dir(user, type='gh'):
     return f'{Conf.DATA}/{type}/{user["id"]}'
 
