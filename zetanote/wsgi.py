@@ -14,6 +14,7 @@ from authlib.client.errors import OAuthException
 from zetanote.note import Note, RC, DB
 from zetanote.app import (Conf, get_notes, parse_zql, ensure_user_dir,
                           get_user_dir, validate_bucket_name, validate_bucket_num,
+                          validate_bucket_size,
                           get_notes_artifact, AppError)
 
 app = Flask(__name__, static_url_path='/static')
@@ -38,6 +39,10 @@ jinja_filters = {
 app.jinja_env.globals.update(jinja_env)
 app.jinja_env.filters.update(jinja_filters)
 
+@app.context_processor
+def inject_db():
+    return dict(db=g.db, conf=g.conf, user=g.user)
+
 @app.before_request
 def start_a_request():
     if request.path.startswith('/static'):
@@ -45,15 +50,15 @@ def start_a_request():
     g.user = session.get('u') and json.loads(session['u'])
     g.root = g.user and get_user_dir(g.user, type='gh')
     g.conf = g.user and RC(g.root).read() or RC.DEFAULT
-    bucket = request.args.get('b', 'default')
-    if g.user and bucket:
-        validate_bucket_name(bucket)
-        validate_bucket_num(g.root, bucket, g.conf)
+    g.bucket = request.args.get('b', 'default')
+    if g.user and g.bucket:
+        validate_bucket_name(g.bucket)
+        validate_bucket_num(g.root, g.bucket, g.conf)
     try:
-        g.db = g.user and DB(g.root, bucket)
+        g.db = g.user and DB(g.root, g.bucket)
     except FileNotFoundError:
         ensure_user_dir(g.user, type='gh')
-        g.db = g.user and DB(g.root, bucket)
+        g.db = g.user and DB(g.root, g.bucket)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -131,6 +136,8 @@ def list_notes(args):
     return render_template('home.html', **context)
 
 def edit_note(args):
+    validate_bucket_size(g.db, g.conf)
+
     note = _ensure_note(args)
 
     if request.method == 'POST':
@@ -145,6 +152,8 @@ def edit_note(args):
 
 
 def add_note(args):
+    validate_bucket_size(g.db, g.conf)
+
     ctx = {'note': {'key': '', 'text': ''}}
 
     if request.method == 'POST':

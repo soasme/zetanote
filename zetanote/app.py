@@ -8,7 +8,7 @@ import glob
 import argparse
 import json
 
-from zetanote.note import DB
+from zetanote.note import DB, RC
 
 class Conf:
 
@@ -26,6 +26,9 @@ class InvalidBucketName(AppError):
     pass
 
 class BucketNumLimited(AppError):
+    pass
+
+class BucketSizeLimited(AppError):
     pass
 
 def get_user_dir(user, type='gh'):
@@ -57,8 +60,13 @@ def validate_bucket_name(bucket):
 def validate_bucket_num(root, bucket, conf):
     buckets = glob.glob(f'{root}/*.json')
     if f'{root}/{bucket}.json' not in buckets \
-            and len(buckets) >= conf.get('maximum_bucket_num', 1):
+            and len(buckets) >= conf.get('maximum_bucket_num',
+                                         RC.DEFAULT['maximum_bucket_num']):
         raise BucketNumLimited('You cannot create more buckets. Please upgrade account.')
+
+def validate_bucket_size(db, conf):
+    if db.stat.st_size > conf.get('maximum_bucket_size', RC.DEFAULT['maximum_bucket_size']):
+        raise BucketSizeLimited('You have reached size limitation of a bucket.')
 
 def textify_note(note, field):
     if not field:

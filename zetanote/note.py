@@ -58,6 +58,7 @@ class RC:
     FILENAME = '.zetanoterc'
     DEFAULT = {
         "maximum_bucket_num": 1,
+        'maximum_bucket_size': 1024 * 1024 * 10,
     }
 
     def __init__(self, root):
@@ -65,10 +66,12 @@ class RC:
         self.path = f'{root}/{self.FILENAME}'
 
     def read(self):
+        orig = deepcopy(self.DEFAULT)
         if not os.path.exists(self.path):
-            return self.DEFAULT
+            return orig
         with open(self.path) as f:
-            return json.load(f)
+            orig.update(json.load(f))
+            return orig
 
 
 class DB:
@@ -76,6 +79,10 @@ class DB:
     def __init__(self, dir, bucket):
         self.path = '%s/%s.json' % (dir, bucket)
         self.db = TinyDB(self.path)
+
+    @property
+    def stat(self):
+        return os.stat(self.path)
 
     def select(self, cond):
         return self.db.table('notes').get(cond)
