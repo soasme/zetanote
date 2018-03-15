@@ -41,7 +41,12 @@ app.jinja_env.filters.update(jinja_filters)
 
 @app.context_processor
 def inject_db():
-    return dict(db=g.db, conf=g.conf, user=g.user, bucket=g.bucket)
+    return dict(
+        db=hasattr(g, 'db') and g.db,
+        conf=hasattr(g, 'conf') and g.conf,
+        user=hasattr(g, 'user') and g.user,
+        bucket=hasattr(g, 'bucket') and g.bucket,
+    )
 
 @app.before_request
 def start_a_request():
