@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='zetanote',
-    version='0.1.6',
+    version='0.1.7',
     url='https://github.com/soasme/zetanote',
     license='GPLv3',
     description='Zete note service.',
