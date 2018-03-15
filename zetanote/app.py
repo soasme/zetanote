@@ -80,7 +80,7 @@ def textify_note(note, field):
 def filter_note(note, condition):
     key = condition['key']
     value = condition['value']
-    note_value = note.get(key, '')
+    note_value = note.get(key) or ''
     if condition['op'] == '=':
         return note_value == value
     elif condition['op'] == '!=':
