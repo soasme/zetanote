@@ -11,3 +11,7 @@ script:
     - if [ ! -z "$TRAVIS_TAG"  ]; then docker tag $DOCKER_IMAGE_NAME:latest $DOCKER_IMAGE_NAME:$TRAVIS_TAG; fi && docker push $DOCKER_IMAGE_NAME
 env:
     - DOCKER_IMAGE_NAME=soasme/zetanote
+notifications:
+    email:
+        on_success: never
+        on_failure: always
