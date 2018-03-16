@@ -65,6 +65,10 @@ def start_a_request():
         ensure_user_dir(g.user, type='gh')
         g.db = g.user and DB(g.root, g.bucket)
 
+@app.route('/health/ping')
+def ping_health():
+    return 'OK'
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return route(request.args)
