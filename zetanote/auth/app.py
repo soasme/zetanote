@@ -1,5 +1,7 @@
 from uuid import uuid4
+from functools import wraps
 
+from flask import url_for, redirect, request
 from flask import g, session
 from werkzeug.local import LocalProxy
 
@@ -40,3 +42,12 @@ def get_current_user():
 
 
 current_user = LocalProxy(get_current_user)
+
+def require_login(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user:
+            url = url_for('auth.login', next=request.path)
+            return redirect(url)
+        return f(*args, **kwargs)
+    return decorated
