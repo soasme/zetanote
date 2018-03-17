@@ -6,9 +6,10 @@ from flask import g, session
 from werkzeug.local import LocalProxy
 
 from authlib.client.apps import register_apps
+from authlib.flask.oauth2 import ResourceProtector, current_token
 
 from .core import oauth, authorization_server
-from .models import User, Client, ClientCredentialsGrant
+from .models import User, Client, Token, ClientCredentialsGrant
 
 
 SESSION_ID = 'sid'
@@ -23,8 +24,10 @@ def logout():
     if SESSION_ID in session:
         del session[SESSION_ID]
 
+
 def generate_token():
     return uuid4().hex + uuid4().hex
+
 
 def get_current_user():
     user = getattr(g, 'current_user', None)
@@ -46,6 +49,7 @@ def get_current_user():
 
 current_user = LocalProxy(get_current_user)
 
+
 def require_login(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -55,8 +59,16 @@ def require_login(f):
         return f(*args, **kwargs)
     return decorated
 
+
 def query_client(client_id):
     return Client.query.filter_by(client_id=client_id).first()
+
+
+def query_token(access_token):
+    return Token.query.filter_by(access_token=access_token).first()
+
+
+require_oauth = ResourceProtector(query_token)
 
 
 def init_app(app):
