@@ -23,3 +23,6 @@ stop:
 
 logs:
 	docker-compose logs -f --tail="100"
+
+attach:
+	docker exec -it zetanote_web_1 bash
