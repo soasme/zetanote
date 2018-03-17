@@ -6,7 +6,7 @@ services:
   web:
     build: .
     env_file: ./.env.docker
-    command: flask run --host=0.0.0.0 --port=8964
+    command: flask run --host=0.0.0.0 --port=8964 --no-reload --debugger
     ports:
       - "8964:8964"
     volumes:
