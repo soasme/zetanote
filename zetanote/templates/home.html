@@ -6,7 +6,7 @@
     <a href="{{ url(a='ad') }}">add</a> |
     <a href="{{ url(a='dump') }}">dump</a> |
     <a href="{{ url(a='logout') }}">logout</a> |
-    <span>Login as <a href="https://github.com/{{ u['login'] }}">{{ u['login'] }}</a>,</span>
+    <span>Login as <a href="https://github.com/{{ u.username }}">{{ u.username }}</a>,</span>
     <span>usage: {{ "%.0f" | format(db.stat.st_size / conf.maximum_bucket_size * 100) }}%</span>
     .
   </div>
