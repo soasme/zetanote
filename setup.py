@@ -20,6 +20,8 @@ setuptools.setup(
         'authlib',
         'gunicorn',
         'Flask-SSLify',
+        'Flask-SQLAlchemy',
+        'PyMySQL',
     ],
     entry_points='''
         [console_scripts]
