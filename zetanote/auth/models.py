@@ -22,6 +22,9 @@ class User(db.Model):
         """
         return self.id
 
+    def as_dict(self):
+        return dict(id=self.id, username=self.username)
+
 
 class Client(db.Model, OAuth2ClientMixin):
     """A client is an application making protected resource requests on
