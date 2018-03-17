@@ -5,7 +5,7 @@ from flask import url_for, redirect, request
 from flask import g, session
 from werkzeug.local import LocalProxy
 
-from .models import User
+from .models import User, Client
 
 
 SESSION_ID = 'sid'
@@ -51,3 +51,6 @@ def require_login(f):
             return redirect(url)
         return f(*args, **kwargs)
     return decorated
+
+def query_client(client_id):
+    return Client.query.filter_by(client_id=client_id).first()
