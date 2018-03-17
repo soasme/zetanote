@@ -14,3 +14,12 @@ download-published-image:
 
 start-published-container: download-published-image
 	docker run --env-file ./.env.docker -p 8964:8964 -it --rm -v `pwd`/data:/data -e ZETANOTE_DATA=/data soasme/zetanote
+
+start:
+	docker-compose up -d
+
+stop:
+	docker-compose stop
+
+logs:
+	docker-compose logs -f --tail="100"

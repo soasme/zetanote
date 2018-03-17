@@ -1,0 +1,15 @@
+version: '3'
+services:
+  db:
+    image: mysql
+    env_file: ./.env.docker
+  web:
+    build: .
+    env_file: ./.env.docker
+    ports:
+      - "8964:8964"
+    volumes:
+      - .:/app
+      - ./data:/data
+    depends_on:
+      - db
