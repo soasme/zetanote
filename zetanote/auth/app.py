@@ -5,7 +5,10 @@ from flask import url_for, redirect, request
 from flask import g, session
 from werkzeug.local import LocalProxy
 
-from .models import User, Client
+from authlib.client.apps import register_apps
+
+from .core import oauth, authorization_server
+from .models import User, Client, ClientCredentialsGrant
 
 
 SESSION_ID = 'sid'
@@ -54,3 +57,11 @@ def require_login(f):
 
 def query_client(client_id):
     return Client.query.filter_by(client_id=client_id).first()
+
+
+def init_app(app):
+    oauth.init_app(app)
+    register_apps(oauth, ['github', ])
+
+    authorization_server.init_app(app, query_client=query_client)
+    authorization_server.register_grant_endpoint(ClientCredentialsGrant)
