@@ -65,3 +65,6 @@ def init_app(app):
 
     authorization_server.init_app(app, query_client=query_client)
     authorization_server.register_grant_endpoint(ClientCredentialsGrant)
+
+    from zetanote.auth.controllers import auth
+    app.register_blueprint(auth)
