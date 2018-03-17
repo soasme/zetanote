@@ -12,11 +12,14 @@ from zetanote.note import DB, RC
 
 class Conf:
 
-    DEBUG = bool(environ.get('DEBUG'))
+    DEBUG = bool(environ.get('FLASK_DEBUG') or environ.get('DEBUG'))
     DATA = environ.get('ZETANOTE_DATA') or '~/.zetanote'
     SECRET_KEY = environ.get('SECRET_KEY') or 'ofINfQJarBfljciupHQRqsGlRJXECLFC'
+    SQLALCHEMY_DATABASE_URI = environ.get('SQLALCHEMY_DATABASE_URI' )
     GITHUB_CLIENT_ID = environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = environ.get('GITHUB_CLIENT_SECRET')
+    OAUTH2_ACCESS_TOKEN_GENERATOR = environ.get('OAUTH2_ACCESS_TOKEN_GENERATOR')
+    OAUTH2_REFRESH_TOKEN_GENERATOR = environ.get('OAUTH2_REFRESH_TOKEN_GENERATOR')
 
 class AppError(Exception):
     def __init__(self, message):
@@ -32,7 +35,7 @@ class BucketSizeLimited(AppError):
     pass
 
 def get_user_dir(user, type='gh'):
-    return f'{Conf.DATA}/{type}/{user["id"]}'
+    return f'{Conf.DATA}/{type}/{user.id}'
 
 def ensure_user_dir(user, type='gh'):
     path = get_user_dir(user, type=type)
