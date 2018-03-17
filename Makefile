@@ -26,3 +26,6 @@ logs:
 
 attach:
 	docker exec -it zetanote_web_1 bash
+
+db:
+	docker exec -it zetanote_db_1 mysql -D zetanote
