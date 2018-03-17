@@ -11,7 +11,11 @@ from flask_sslify import SSLify
 from authlib.flask.client import OAuth
 from authlib.client.apps import github
 from authlib.client.errors import OAuthException
+
+from zetanote.core import db
 from zetanote.note import Note, RC, DB
+from zetanote.auth.app import current_user, oauth, init_app as init_oauth_app
+from zetanote.api.core import init_app as init_api_app
 from zetanote.app import (Conf, get_notes, parse_zql, ensure_user_dir,
                           get_user_dir, validate_bucket_name, validate_bucket_num,
                           validate_bucket_size,
@@ -19,10 +23,12 @@ from zetanote.app import (Conf, get_notes, parse_zql, ensure_user_dir,
 
 app = Flask(__name__, static_url_path='/static')
 app.config.from_object(Conf)
-oauth = OAuth(app)
-github.register_to(oauth)
+init_oauth_app(app)
+init_api_app(app)
+db.init_app(app)
 sslify = Conf.DEBUG and SSLify(app)
 markdown = Markdown(extensions=['markdown.extensions.extra'])
+
 
 def urlgen(**kwargs):
     scheme = 'http' if Conf.DEBUG else 'https'
@@ -44,15 +50,21 @@ def inject_db():
     return dict(
         db=hasattr(g, 'db') and g.db,
         conf=hasattr(g, 'conf') and g.conf,
-        user=hasattr(g, 'user') and g.user,
+        user=current_user,
         bucket=hasattr(g, 'bucket') and g.bucket,
     )
+
+
+@app.before_first_request
+def start_instance():
+    import zetanote.auth.models
+    db.create_all()
 
 @app.before_request
 def start_a_request():
     if request.path.startswith('/static'):
         return
-    g.user = session.get('u') and json.loads(session['u'])
+    g.user = current_user
     g.root = g.user and get_user_dir(g.user, type='gh')
     g.conf = g.user and RC(g.root).read() or RC.DEFAULT
     g.bucket = request.args.get('b', 'default')
@@ -73,19 +85,13 @@ def ping_health():
 def index():
     return route(request.args)
 
-def get_user():
-    return session.get('u') and json.loads(session.get('u'))
-
 def route(args):
     action = args.get('a', 'ls')
 
     if action == 'login':
-        return login(args)
-    elif action == 'authorize':
-        return authorize(args)
+        return redirect(url_for('auth.login'))
 
-    u = get_user()
-    if not u:
+    if not current_user:
         return show_proj(args)
 
     if action == 'cat':
@@ -99,7 +105,7 @@ def route(args):
     elif action == 'dump':
         return dump_note(args)
     elif action == 'logout':
-        return logout(args)
+        return redirect(url_for('auth.logout'))
     else:
         return show_404(None, args)
 
@@ -136,13 +142,13 @@ def show_note(args):
     ctx = {'note': note}
     return render_template('note.html', **ctx)
 
-
 def list_notes(args):
     query = args.get('q', '')
     args = parse_zql(query) if query else {}
     hits = get_notes(g.db, args.get('field'), args.get('conditions'))
-    context = dict(u=get_user(), hits=hits, q=query)
+    context = dict(u=current_user, hits=hits, q=query)
     return render_template('home.html', **context)
+
 
 def edit_note(args):
     validate_bucket_size(g.db, g.conf)
@@ -174,29 +180,10 @@ def add_note(args):
 
     return render_template('edit.html', **ctx)
 
+
 def dump_note(args):
     data = get_notes_artifact(g.db)
     memory_file = io.BytesIO(data.encode('utf8'))
     return send_file(memory_file,
                      attachment_filename='data.json',
                      as_attachment=True)
-
-
-def login(args):
-    redirect_uri = urlgen(a='authorize')
-    return oauth.github.authorize_redirect(redirect_uri)
-
-def authorize(args):
-    token = oauth.github.authorize_access_token()
-    res = oauth.github.get('/user')
-    if res.status_code == 200:
-        user = res.json()
-        ensure_user_dir(user, type='gh')
-        session['u'] = json.dumps(user)
-        return redirect(urlgen())
-    else:
-        abort(401)
-
-def logout(args):
-    session.pop('u', None)
-    return redirect(urlgen())
